@@ -17,3 +17,17 @@ data class UserResponse(
     val email: String,
     val role: String
 )
+// Lo que nos envía el cliente para iniciar sesión
+@Serializable
+data class LoginRequest(
+    val email: String,
+    val passwordRaw: String
+)
+
+// Lo que le devolvemos si el login es exitoso
+@Serializable
+data class TokenResponse(
+    val token: String,
+    val role: String
+)
+
