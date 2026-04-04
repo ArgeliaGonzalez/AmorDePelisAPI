@@ -11,6 +11,7 @@ import org.example.core.database.DatabaseFactory
 import org.example.core.security.JwtConfig
 import org.example.users.infra.initUserModule
 import org.example.virtual_rooms.infra.initVirtualRoomModule
+import org.example.movies.infra.initMoviesModule
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -39,4 +40,5 @@ fun Application.module() {
 
     initUserModule()
     initVirtualRoomModule()
+    initMoviesModule()
 }

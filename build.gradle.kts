@@ -36,6 +36,8 @@ dependencies {
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     // --- Seguridad (Hashing de contraseñas) ---
     implementation("org.mindrot:jbcrypt:0.4")
+    // --- Cloudinary (Subida de imágenes) ---
+    implementation("com.cloudinary:cloudinary-http44:1.36.0")
 
     // --- Base de Datos ---
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")

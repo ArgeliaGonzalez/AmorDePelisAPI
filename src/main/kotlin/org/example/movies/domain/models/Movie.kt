@@ -1,4 +1,9 @@
 package org.example.movies.domain.models
 
-interface Movie {
-}
+data class Movie(
+    val id: Int = 0,
+    val title: String,
+    val synopsis: String?,
+    val durationMinutes: Int?,
+    val imageUrl: String?
+)
