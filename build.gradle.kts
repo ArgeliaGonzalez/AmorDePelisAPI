@@ -21,7 +21,7 @@ kotlin {
 
 dependencies {
     val ktorVersion = "3.4.1"
-    val exposedVersion = "1.2.0"
+    val exposedVersion = "0.45.0"
 
     // --- Ktor Server ---
     implementation("io.ktor:ktor-server-core:$ktorVersion")
@@ -32,6 +32,10 @@ dependencies {
     // --- Ktor Authentication & JWT ---
     implementation("io.ktor:ktor-server-auth:${ktorVersion}")
     implementation("io.ktor:ktor-server-auth-jwt:${ktorVersion}")
+    // --- Variables de Entorno (.env) ---
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+    // --- Seguridad (Hashing de contraseñas) ---
+    implementation("org.mindrot:jbcrypt:0.4")
 
     // --- Base de Datos ---
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")

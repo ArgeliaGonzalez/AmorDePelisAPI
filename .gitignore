@@ -5,6 +5,11 @@ build/
 !**/src/test/**/build/
 .kotlin
 
+### Archivos de Entorno y Secretos ###
+.env
+application.conf
+application-dev.conf
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml
