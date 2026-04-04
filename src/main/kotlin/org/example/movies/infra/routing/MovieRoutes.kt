@@ -11,10 +11,11 @@ import org.example.core.middleware.withRole
 import org.example.core.utils.saveToTempFile
 import org.example.movies.app.CreateMovie
 import org.example.movies.app.GetAllMovies
+import org.example.movies.app.SearchMovies
 import org.example.movies.app.dto.MovieResponse
 import java.io.File
 
-fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies) {
+fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies, searchMovies: SearchMovies) {
     routing {
 
         authenticate("auth-jwt") {
@@ -22,19 +23,17 @@ fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies
 
                 get {
                     try {
-                        val movies = getAllMovies.execute()
-
-                        val response = movies.map { movie ->
-                            MovieResponse(
-                                id = movie.id,
-                                title = movie.title,
-                                imageUrl = movie.imageUrl
-                            )
+                        val query = call.request.queryParameters["title"]
+                        val movies = if (query.isNullOrBlank()) {
+                            getAllMovies.execute()
+                        } else {
+                            searchMovies.execute(query)
                         }
 
+                        val response = movies.map { MovieResponse(it.id, it.title, it.imageUrl) }
                         call.respond(HttpStatusCode.OK, response)
                     } catch (e: Exception) {
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al obtener películas"))
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al buscar"))
                     }
                 }
 
