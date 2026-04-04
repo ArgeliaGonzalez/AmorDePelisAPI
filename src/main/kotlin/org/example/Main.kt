@@ -10,6 +10,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import org.example.core.database.DatabaseFactory
 import org.example.core.security.JwtConfig
 import org.example.users.infra.initUserModule
+import org.example.virtual_rooms.infra.initVirtualRoomModule
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -37,4 +38,5 @@ fun Application.module() {
     DatabaseFactory.init()
 
     initUserModule()
+    initVirtualRoomModule()
 }
