@@ -9,20 +9,41 @@ import io.ktor.server.routing.*
 import org.example.core.middleware.withRole
 import org.example.tags.app.*
 import org.example.tags.app.dto.*
+import org.example.movies.app.dto.MovieResponse
 
 fun Application.tagRoutes(
     createTag: CreateTag,
     getAllTags: GetAllTags,
     addTagToMovie: AddTagToMovie,
-    getMovieTags: GetMovieTags
+    getMovieTags: GetMovieTags,
+    getMoviesByTag: GetMoviesByTag,
 ) {
     routing {
         authenticate("auth-jwt") {
 
             route("/api/v1/tags") {
+
                 get {
                     val tags = getAllTags.execute()
                     call.respond(HttpStatusCode.OK, tags.map { TagResponse(it.id, it.name) })
+                }
+                get("/{tagId}/movies") {
+                    try {
+                        val tagId = call.parameters["tagId"]?.toInt() ?: throw Exception()
+                        val movies = getMoviesByTag.execute(tagId)
+
+                        val response = movies.map { movie ->
+                            val tagsForMovie = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
+                            MovieResponse(movie.id, movie.title, movie.imageUrl, tagsForMovie)
+                        }
+
+                        call.respond(HttpStatusCode.OK, response)
+                    } catch (e: Exception) {
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            mapOf("error" to "Error al obtener películas")
+                        )
+                    }
                 }
 
                 withRole("ADMIN") {
@@ -32,20 +53,27 @@ fun Application.tagRoutes(
                             val tag = createTag.execute(request.name)
                             call.respond(HttpStatusCode.Created, TagResponse(tag.id, tag.name))
                         } catch (e: Exception) {
-                            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "No se pudo crear la etiqueta"))
+                            call.respond(
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to "No se pudo crear la etiqueta")
+                            )
                         }
                     }
                 }
             }
 
             route("/api/v1/movies/{movieId}/tags") {
+
                 get {
                     try {
                         val movieId = call.parameters["movieId"]?.toInt() ?: throw Exception()
                         val tags = getMovieTags.execute(movieId)
                         call.respond(HttpStatusCode.OK, tags.map { TagResponse(it.id, it.name) })
                     } catch (e: Exception) {
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al obtener etiquetas"))
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            mapOf("error" to "Error al obtener etiquetas")
+                        )
                     }
                 }
 

@@ -13,11 +13,19 @@ import org.example.movies.app.CreateMovie
 import org.example.movies.app.GetAllMovies
 import org.example.movies.app.SearchMovies
 import org.example.movies.app.dto.MovieResponse
+import org.example.tags.app.AddTagToMovie
+import org.example.tags.app.GetMovieTags
+import org.example.tags.app.dto.TagResponse
 import java.io.File
 
-fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies, searchMovies: SearchMovies) {
+fun Application.movieRoutes(
+    createMovie: CreateMovie,
+    getAllMovies: GetAllMovies,
+    searchMovies: SearchMovies,
+    addTagToMovie: AddTagToMovie,
+    getMovieTags: GetMovieTags
+) {
     routing {
-
         authenticate("auth-jwt") {
             route("/api/v1/movies") {
 
@@ -30,7 +38,11 @@ fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies
                             searchMovies.execute(query)
                         }
 
-                        val response = movies.map { MovieResponse(it.id, it.title, it.imageUrl) }
+                        val response = movies.map { movie ->
+                            val tags = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
+                            MovieResponse(movie.id, movie.title, movie.imageUrl, tags)
+                        }
+
                         call.respond(HttpStatusCode.OK, response)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al buscar"))
@@ -43,6 +55,7 @@ fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies
                         var synopsis: String? = null
                         var durationMinutes: Int? = null
                         var imageFile: File? = null
+                        var tagsString: String? = null
 
                         try {
                             val multipartData = call.receiveMultipart()
@@ -54,6 +67,7 @@ fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies
                                             "title" -> title = part.value
                                             "synopsis" -> synopsis = part.value
                                             "durationMinutes" -> durationMinutes = part.value.toIntOrNull()
+                                            "tags" -> tagsString = part.value
                                         }
                                     }
                                     is PartData.FileItem -> {
@@ -67,11 +81,15 @@ fun Application.movieRoutes(createMovie: CreateMovie, getAllMovies: GetAllMovies
                             }
 
                             val movie = createMovie.execute(title, synopsis, durationMinutes, imageFile)
-                            val response = MovieResponse(
-                                id = movie.id,
-                                title = movie.title,
-                                imageUrl = movie.imageUrl
-                            )
+
+                            val tagIds = tagsString?.split(",")?.mapNotNull { it.trim().toIntOrNull() } ?: emptyList()
+                            tagIds.forEach { tagId ->
+                                addTagToMovie.execute(movie.id, tagId)
+                            }
+
+                            val tags = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
+                            val response = MovieResponse(movie.id, movie.title, movie.imageUrl, tags)
+
                             call.respond(HttpStatusCode.Created, response)
 
                         } catch (e: Exception) {

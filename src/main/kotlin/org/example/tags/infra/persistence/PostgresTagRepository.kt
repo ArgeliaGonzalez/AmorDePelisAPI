@@ -6,6 +6,8 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.example.movies.infra.persistence.MoviesTable
+import org.example.movies.domain.models.Movie
 
 class PostgresTagRepository : TagRepository {
 
@@ -41,6 +43,22 @@ class PostgresTagRepository : TagRepository {
                 .select { MovieTagsTable.peliculaId eq movieId }
                 .map {
                     Tag(id = it[TagsTable.id], name = it[TagsTable.nombre])
+                }
+        }
+    }
+
+    override fun getMoviesByTag(tagId: Int): List<Movie> {
+        return transaction {
+            (MovieTagsTable innerJoin MoviesTable)
+                .select { MovieTagsTable.etiquetaId eq tagId }
+                .map {
+                    Movie(
+                        id = it[MoviesTable.id],
+                        title = it[MoviesTable.titulo],
+                        synopsis = it[MoviesTable.sinopsis],
+                        durationMinutes = it[MoviesTable.duracionMinutos],
+                        imageUrl = it[MoviesTable.imagenUrl]
+                    )
                 }
         }
     }
