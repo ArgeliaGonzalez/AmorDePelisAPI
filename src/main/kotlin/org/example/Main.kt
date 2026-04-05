@@ -14,6 +14,7 @@ import org.example.virtual_rooms.infra.initVirtualRoomModule
 import org.example.movies.infra.initMoviesModule
 import org.example.history.infra.initHistoryModule
 import org.example.custom_lists.infra.initCustomListsModule
+import org.example.tags.infra.initTagsModule
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -45,4 +46,5 @@ fun Application.module() {
     initMoviesModule()
     initHistoryModule()
     initCustomListsModule()
+    initTagsModule()
 }
