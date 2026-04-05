@@ -8,7 +8,6 @@ class CreateVirtualRoom(private val repository: VirtualRoomRepository) {
     fun execute(roomName: String, creatorId: Int): VirtualRoom {
         if (roomName.isBlank()) throw IllegalArgumentException("El nombre de la sala no puede estar vacío")
 
-        // Generamos un código alfanumérico corto (6 caracteres)
         val code = generateRandomCode(6)
 
         val newRoom = VirtualRoom(

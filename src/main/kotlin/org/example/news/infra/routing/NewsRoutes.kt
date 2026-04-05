@@ -11,15 +11,16 @@ import org.example.core.middleware.withRole
 import org.example.core.utils.saveToTempFile
 import org.example.news.app.CreateNews
 import org.example.news.app.GetAllNews
+import org.example.news.app.GetLatestNews
 import org.example.news.app.dto.NewsResponse
 import java.io.File
 
-fun Application.newsRoutes(createNews: CreateNews, getAllNews: GetAllNews) {
+fun Application.newsRoutes(createNews: CreateNews, getAllNews: GetAllNews,
+                           getLatestNews: GetLatestNews) {
     routing {
         authenticate("auth-jwt") {
             route("/api/v1/news") {
 
-                // GET: Todos pueden ver las noticias
                 get {
                     try {
                         val news = getAllNews.execute()
@@ -32,7 +33,26 @@ fun Application.newsRoutes(createNews: CreateNews, getAllNews: GetAllNews) {
                     }
                 }
 
-                // POST: Solo el ADMIN puede publicar noticias
+                get("/latest") {
+                    try {
+                        val latestNews = getLatestNews.execute()
+                        if (latestNews != null) {
+                            val response = NewsResponse(
+                                latestNews.id,
+                                latestNews.title,
+                                latestNews.content,
+                                latestNews.publishDate,
+                                latestNews.imageUrl
+                            )
+                            call.respond(HttpStatusCode.OK, response)
+                        } else {
+                            call.respond(HttpStatusCode.NotFound, mapOf("message" to "No hay noticias disponibles"))
+                        }
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al obtener la noticia"))
+                    }
+                }
+
                 withRole("ADMIN") {
                     post {
                         var title = ""

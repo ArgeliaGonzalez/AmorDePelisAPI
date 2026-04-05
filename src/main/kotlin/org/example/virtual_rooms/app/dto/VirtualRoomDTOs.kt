@@ -16,3 +16,6 @@ data class RoomResponse(
     val creatorId: Int,
     val guestId: Int?
 )
+
+@Serializable
+data class UpdateRoomRequest(val roomName: String)

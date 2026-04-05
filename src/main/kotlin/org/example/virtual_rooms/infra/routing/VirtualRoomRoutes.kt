@@ -15,17 +15,75 @@ import org.example.virtual_rooms.app.dto.CreateRoomRequest
 import org.example.virtual_rooms.app.dto.JoinRoomRequest
 import org.example.virtual_rooms.app.dto.RoomResponse
 import org.example.movies.app.dto.MovieResponse
+import org.example.virtual_rooms.app.dto.UpdateRoomRequest
+import org.example.virtual_rooms.app.GetUserRooms
+import org.example.virtual_rooms.app.UpdateVirtualRoom
+import org.example.virtual_rooms.app.DeleteVirtualRoom
 
 fun Application.virtualRoomRoutes(
     createVirtualRoom: CreateVirtualRoom,
     joinVirtualRoom: JoinVirtualRoom,
     addMovieToRoom: AddMovieToRoom,
-    getRoomMovies: GetRoomMovies
+    getRoomMovies: GetRoomMovies,
+    getUserRooms: GetUserRooms,
+    updateVirtualRoom: UpdateVirtualRoom,
+    deleteVirtualRoom: DeleteVirtualRoom
 ) {
     routing {
         // Todo este bloque está protegido: Requiere Token
         authenticate("auth-jwt") {
             route("/api/v1/rooms") {
+
+                get {
+                    try {
+                        val principal = call.principal<JWTPrincipal>()
+                        val currentUserId = principal?.payload?.getClaim("userId")?.asInt() ?: throw Exception("Token inválido")
+
+                        val rooms = getUserRooms.execute(currentUserId)
+                        val response = rooms.map { RoomResponse(it.id, it.roomName, it.invitationCode, it.creatorId, it.guestId) }
+
+                        call.respond(HttpStatusCode.OK, response)
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al obtener tus salas"))
+                    }
+                }
+
+                // PUT: Actualizar nombre de mi sala
+                put("/{roomId}") {
+                    try {
+                        val roomId = call.parameters["roomId"]?.toInt() ?: throw Exception("ID inválido")
+                        val request = call.receive<UpdateRoomRequest>()
+
+                        val principal = call.principal<JWTPrincipal>()
+                        val currentUserId = principal?.payload?.getClaim("userId")?.asInt() ?: throw Exception("Token inválido")
+
+                        val room = updateVirtualRoom.execute(roomId, currentUserId, request.roomName)
+                        call.respond(HttpStatusCode.OK, RoomResponse(room.id, room.roomName, room.invitationCode, room.creatorId, room.guestId))
+
+                    } catch (e: IllegalAccessException) {
+                        call.respond(HttpStatusCode.Forbidden, mapOf("error" to e.message))
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Error al actualizar")))
+                    }
+                }
+
+                // DELETE: Eliminar mi sala
+                delete("/{roomId}") {
+                    try {
+                        val roomId = call.parameters["roomId"]?.toInt() ?: throw Exception("ID inválido")
+
+                        val principal = call.principal<JWTPrincipal>()
+                        val currentUserId = principal?.payload?.getClaim("userId")?.asInt() ?: throw Exception("Token inválido")
+
+                        deleteVirtualRoom.execute(roomId, currentUserId)
+                        call.respond(HttpStatusCode.OK, mapOf("message" to "Sala eliminada con éxito"))
+
+                    } catch (e: IllegalAccessException) {
+                        call.respond(HttpStatusCode.Forbidden, mapOf("error" to e.message))
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Error al eliminar")))
+                    }
+                }
 
                 post {
                     try {

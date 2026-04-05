@@ -42,4 +42,25 @@ class PostgresNewsRepository : NewsRepository {
                 }
         }
     }
+
+    override fun getLatest(): News? {
+        return transaction {
+            NewsTable.selectAll()
+                .orderBy(
+                    NewsTable.fechaPublicacion to org.jetbrains.exposed.sql.SortOrder.DESC,
+                    NewsTable.id to org.jetbrains.exposed.sql.SortOrder.DESC
+                )
+                .limit(1)
+                .map {
+                    News(
+                        id = it[NewsTable.id],
+                        title = it[NewsTable.titulo],
+                        content = it[NewsTable.contenido],
+                        publishDate = it[NewsTable.fechaPublicacion].toString(),
+                        imageUrl = it[NewsTable.imagenUrl]
+                    )
+                }
+                .singleOrNull()
+        }
+    }
 }
