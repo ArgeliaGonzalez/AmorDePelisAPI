@@ -16,6 +16,7 @@ import org.example.history.infra.initHistoryModule
 import org.example.custom_lists.infra.initCustomListsModule
 import org.example.tags.infra.initTagsModule
 import org.example.news.infra.initNewsModule
+import org.example.products.infra.initProductsModule
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
@@ -49,4 +50,5 @@ fun Application.module() {
     initCustomListsModule()
     initTagsModule()
     initNewsModule()
+    initProductsModule()
 }
