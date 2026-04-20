@@ -34,7 +34,14 @@ fun Application.tagRoutes(
 
                         val response = movies.map { movie ->
                             val tagsForMovie = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
-                            MovieResponse(movie.id, movie.title, movie.imageUrl, tagsForMovie)
+                            MovieResponse(
+                                id = movie.id,
+                                title = movie.title,
+                                synopsis = movie.synopsis,
+                                durationMinutes = movie.durationMinutes,
+                                imageUrl = movie.imageUrl,
+                                tags = tagsForMovie
+                            )
                         }
 
                         call.respond(HttpStatusCode.OK, response)

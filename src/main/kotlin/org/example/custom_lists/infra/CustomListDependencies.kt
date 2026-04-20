@@ -3,6 +3,7 @@ package org.example.custom_lists.infra
 import io.ktor.server.application.*
 import org.example.custom_lists.app.AddMovieToCustomList
 import org.example.custom_lists.app.CreateCustomList
+import org.example.custom_lists.app.GetCustomList
 import org.example.custom_lists.app.GetMoviesFromCustomList
 import org.example.custom_lists.app.GetRoomCustomLists
 import org.example.custom_lists.infra.persistence.PostgresCustomListRepository
@@ -13,8 +14,9 @@ fun Application.initCustomListsModule() {
 
     val createList = CreateCustomList(repository)
     val getLists = GetRoomCustomLists(repository)
+    val getList = GetCustomList(repository)
     val addMovie = AddMovieToCustomList(repository)
     val getMovies = GetMoviesFromCustomList(repository)
 
-    customListRoutes(createList, getLists, addMovie, getMovies)
+    customListRoutes(createList, getLists, getList, addMovie, getMovies)
 }

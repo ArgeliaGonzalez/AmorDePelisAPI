@@ -5,5 +5,6 @@ import org.example.movies.domain.models.Movie
 interface MovieRepository {
     fun save(movie: Movie): Movie
     fun findAll(): List<Movie>
+    fun findById(id: Int): Movie?
     fun searchByTitle(query: String): List<Movie>
 }

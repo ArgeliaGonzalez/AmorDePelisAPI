@@ -14,8 +14,24 @@ data class RoomResponse(
     val roomName: String,
     val invitationCode: String,
     val creatorId: Int,
-    val guestId: Int?
+    val guestId: Int?,
+    val creatorName: String? = null,
+    val guestName: String? = null,
+    val currentUserName: String? = null,
+    val partnerName: String? = null
 )
 
 @Serializable
 data class UpdateRoomRequest(val roomName: String)
+
+@Serializable
+data class RoomSummaryResponse(
+    val roomId: Int,
+    val roomName: String,
+    val currentUserName: String,
+    val partnerName: String?,
+    val listsCount: Int,
+    val favoritesCount: Int,
+    val ratingsCount: Int,
+    val averageRating: Double
+)

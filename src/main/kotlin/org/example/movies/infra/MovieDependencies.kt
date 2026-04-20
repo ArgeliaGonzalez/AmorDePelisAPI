@@ -3,6 +3,7 @@ package org.example.movies.infra
 import io.ktor.server.application.*
 import org.example.movies.app.CreateMovie
 import org.example.movies.app.GetAllMovies
+import org.example.movies.app.GetMovie
 import org.example.movies.app.SearchMovies
 import org.example.movies.infra.persistence.PostgresMovieRepository
 import org.example.movies.infra.routing.movieRoutes
@@ -16,9 +17,10 @@ fun Application.initMoviesModule() {
 
     val createMovie = CreateMovie(repository)
     val getAllMovies = GetAllMovies(repository)
+    val getMovie = GetMovie(repository)
     val searchMovies = SearchMovies(repository)
     val addTagToMovie = AddTagToMovie(tagRepository)
     val getMovieTags = GetMovieTags(tagRepository)
 
-    movieRoutes(createMovie, getAllMovies, searchMovies, addTagToMovie, getMovieTags)
+    movieRoutes(createMovie, getAllMovies, getMovie, searchMovies, addTagToMovie, getMovieTags)
 }

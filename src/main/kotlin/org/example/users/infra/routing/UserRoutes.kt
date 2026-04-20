@@ -26,7 +26,7 @@ fun Application.userRoutes(
             post("/register") {
                 try {
                     val request = call.receive<RegisterUserRequest>()
-                    val newUser = registerUser.execute(request.email, request.passwordRaw, request.role)
+                    val newUser = registerUser.execute(request.email, request.passwordRaw, request.role, request.username)
                     // (Ajusta registerUser.execute si le pasaste el parámetro username)
 
                     call.respond(HttpStatusCode.Created, UserResponse(newUser.id, newUser.email, newUser.role, newUser.username, newUser.profileImageUrl))
@@ -65,7 +65,7 @@ fun Application.userRoutes(
                         val id = call.parameters["id"]?.toInt() ?: throw Exception("ID inválido")
 
                         val principal = call.principal<JWTPrincipal>()
-                        val idFromToken = principal?.payload?.getClaim("id")?.asInt()
+                        val idFromToken = principal?.payload?.getClaim("userId")?.asInt()
 
                         if (idFromToken != id) {
                             call.respond(HttpStatusCode.Forbidden, mapOf("error" to "No tienes permiso para modificar este perfil"))
@@ -101,7 +101,7 @@ fun Application.userRoutes(
                         val id = call.parameters["id"]?.toInt() ?: throw Exception("ID inválido")
 
                         val principal = call.principal<JWTPrincipal>()
-                        val idFromToken = principal?.payload?.getClaim("id")?.asInt()
+                        val idFromToken = principal?.payload?.getClaim("userId")?.asInt()
 
                         if (idFromToken != id) {
                             call.respond(HttpStatusCode.Forbidden, mapOf("error" to "No tienes permiso para eliminar este perfil"))

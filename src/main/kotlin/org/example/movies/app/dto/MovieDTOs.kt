@@ -7,6 +7,11 @@ import org.example.tags.app.dto.TagResponse
 data class MovieResponse(
     val id: Int,
     val title: String,
+    val synopsis: String? = null,
+    val durationMinutes: Int? = null,
     val imageUrl: String?,
-    val tags: List<TagResponse> = emptyList()
+    val tags: List<TagResponse> = emptyList(),
+    val averageRating: Double? = null,
+    val ratingCount: Int = 0,
+    val isFavorite: Boolean = false
 )

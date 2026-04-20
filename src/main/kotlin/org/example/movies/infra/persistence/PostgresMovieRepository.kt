@@ -7,8 +7,17 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.ResultRow
 
 class PostgresMovieRepository : MovieRepository {
+
+    private fun rowToMovie(row: ResultRow) = Movie(
+        id = row[MoviesTable.id],
+        title = row[MoviesTable.titulo],
+        synopsis = row[MoviesTable.sinopsis],
+        durationMinutes = row[MoviesTable.duracionMinutos],
+        imageUrl = row[MoviesTable.imagenUrl]
+    )
 
     override fun save(movie: Movie): Movie {
         return transaction {
@@ -24,29 +33,19 @@ class PostgresMovieRepository : MovieRepository {
 
     override fun findAll(): List<Movie> {
         return transaction {
-            MoviesTable.selectAll().map {
-                Movie(
-                    id = it[MoviesTable.id],
-                    title = it[MoviesTable.titulo],
-                    synopsis = it[MoviesTable.sinopsis],
-                    durationMinutes = it[MoviesTable.duracionMinutos],
-                    imageUrl = it[MoviesTable.imagenUrl]
-                )
-            }
+            MoviesTable.selectAll().map(::rowToMovie)
+        }
+    }
+
+    override fun findById(id: Int): Movie? {
+        return transaction {
+            MoviesTable.select { MoviesTable.id eq id }.map(::rowToMovie).singleOrNull()
         }
     }
 
     override fun searchByTitle(query: String): List<Movie> {
         return transaction {
-            MoviesTable.select { MoviesTable.titulo.lowerCase() like "%${query.lowercase()}%" }.map {
-                Movie(
-                    id = it[MoviesTable.id],
-                    title = it[MoviesTable.titulo],
-                    synopsis = it[MoviesTable.sinopsis],
-                    durationMinutes = it[MoviesTable.duracionMinutos],
-                    imageUrl = it[MoviesTable.imagenUrl]
-                )
-            }
+            MoviesTable.select { MoviesTable.titulo.lowerCase() like "%${query.lowercase()}%" }.map(::rowToMovie)
         }
     }
 }

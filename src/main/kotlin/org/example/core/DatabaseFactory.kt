@@ -3,7 +3,11 @@ package org.example.core.database
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.github.cdimascio.dotenv.dotenv
+import org.example.custom_lists.infra.persistence.CustomListsTable
+import org.example.favorites.infra.persistence.FavoritesTable
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
 
@@ -29,6 +33,9 @@ object DatabaseFactory {
 
         val dataSource = HikariDataSource(config)
         Database.connect(dataSource)
+        transaction {
+            SchemaUtils.createMissingTablesAndColumns(CustomListsTable, FavoritesTable)
+        }
         println("Conexión a AWS RDS establecida exitosamente de forma segura.")
     }
 

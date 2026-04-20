@@ -8,6 +8,8 @@ object CustomListsTable : Table("listas_personalizadas") {
     val id = integer("id").autoIncrement()
     val salaVirtualId = integer("sala_virtual_id").references(VirtualRoomsTable.id)
     val nombre = varchar("nombre", 150)
+    val descripcion = text("descripcion").nullable()
+    val colorHex = varchar("color_hex", 20).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

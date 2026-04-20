@@ -11,8 +11,10 @@ import org.example.core.middleware.withRole
 import org.example.core.utils.saveToTempFile
 import org.example.movies.app.CreateMovie
 import org.example.movies.app.GetAllMovies
+import org.example.movies.app.GetMovie
 import org.example.movies.app.SearchMovies
 import org.example.movies.app.dto.MovieResponse
+import org.example.movies.domain.models.Movie
 import org.example.tags.app.AddTagToMovie
 import org.example.tags.app.GetMovieTags
 import org.example.tags.app.dto.TagResponse
@@ -21,10 +23,20 @@ import java.io.File
 fun Application.movieRoutes(
     createMovie: CreateMovie,
     getAllMovies: GetAllMovies,
+    getMovie: GetMovie,
     searchMovies: SearchMovies,
     addTagToMovie: AddTagToMovie,
     getMovieTags: GetMovieTags
 ) {
+    fun Movie.toResponse(tags: List<TagResponse> = emptyList()) = MovieResponse(
+        id = id,
+        title = title,
+        synopsis = synopsis,
+        durationMinutes = durationMinutes,
+        imageUrl = imageUrl,
+        tags = tags
+    )
+
     routing {
         authenticate("auth-jwt") {
             route("/api/v1/movies") {
@@ -40,12 +52,26 @@ fun Application.movieRoutes(
 
                         val response = movies.map { movie ->
                             val tags = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
-                            MovieResponse(movie.id, movie.title, movie.imageUrl, tags)
+                            movie.toResponse(tags)
                         }
 
                         call.respond(HttpStatusCode.OK, response)
                     } catch (e: Exception) {
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al buscar"))
+                    }
+                }
+
+                get("/{movieId}") {
+                    try {
+                        val movieId = call.parameters["movieId"]?.toInt() ?: throw IllegalArgumentException("ID invalido")
+                        val movie = getMovie.execute(movieId)
+                        val tags = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
+
+                        call.respond(HttpStatusCode.OK, movie.toResponse(tags))
+                    } catch (e: NoSuchElementException) {
+                        call.respond(HttpStatusCode.NotFound, mapOf("error" to (e.message ?: "Pelicula no encontrada")))
+                    } catch (e: Exception) {
+                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Error al obtener pelicula")))
                     }
                 }
 
@@ -88,7 +114,7 @@ fun Application.movieRoutes(
                             }
 
                             val tags = getMovieTags.execute(movie.id).map { TagResponse(it.id, it.name) }
-                            val response = MovieResponse(movie.id, movie.title, movie.imageUrl, tags)
+                            val response = movie.toResponse(tags)
 
                             call.respond(HttpStatusCode.Created, response)
 
